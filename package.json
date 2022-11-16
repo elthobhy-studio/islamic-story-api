@@ -1,0 +1,31 @@
+{
+  "name": "islamic-story-api",
+  "version": "1.0.0",
+  "description": "Untuk Project Islamic Story App",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon ./src/server.js",
+    "lint": "eslint ./src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eljabra-studio/islamic-story-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eljabra-studio/islamic-story-api/issues"
+  },
+  "homepage": "https://github.com/eljabra-studio/islamic-story-api#readme",
+  "devDependencies": {
+    "eslint": "^8.27.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1"
+  },
+  "dependencies": {
+    "nanoid": "^4.0.0"
+  }
+}
