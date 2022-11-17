@@ -1,36 +1,28 @@
-const {
-  addDataHandler,
-  getAllDatasHandler,
-  getDataByIdHandler,
-  editDataByIdHandler,
-  deleteDataByIdHandler,
-} = require('./handler');
-
-const routes = [
+const routes = (handler) => [
   {
     method: 'POST',
     path: '/prophets',
-    handler: addDataHandler,
+    handler: handler.postDataHandler,
   },
   {
     method: 'GET',
     path: '/prophets',
-    handler: getAllDatasHandler,
+    handler: handler.getAllDatasHandler,
   },
   {
     method: 'GET',
     path: '/prophets/{id}',
-    handler: getDataByIdHandler,
+    handler: handler.getDataByIdHandler,
   },
   {
     method: 'PUT',
     path: '/prophets/{id}',
-    handler: editDataByIdHandler,
+    handler: handler.putDataByIdHandler,
   },
   {
     method: 'DELETE',
     path: '/prophets/{id}',
-    handler: deleteDataByIdHandler,
+    handler: handler.deleteDataByIdHandler,
   },
 ];
 

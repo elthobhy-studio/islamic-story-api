@@ -1,138 +1,148 @@
-const { nanoid } = require('nanoid');
-const datas = require('./data');
+const ClientError = require('../../exceptions/ClientError');
+class StoriesHandler {
+  constructor(service, validator) {
+    this._service = service;
+    this._validator = validator;
 
-const addDataHandler = (request, h) => {
-  const { image, name, umur, tempat_diutus, kisah } = request.payload;
-
-  const id = nanoid(16);
-  const createdAt = new Date().toISOString();
-  const updatedAt = createdAt;
-
-  const newData = {
-    id,
-    createdAt,
-    updatedAt,
-    image,
-    name,
-    umur,
-    tempat_diutus,
-    kisah,
-  };
-
-  datas.push(newData);
-  const isSuccess = datas.filter((data) => data.id === id).length > 0;
-
-  if (isSuccess) {
-    const response = h.response({
-      status: 'success',
-      message: 'Data Berhasil Ditambahkan',
-      data: {
-        dataId: id,
-      },
-    });
-
-    response.code(201);
-    return response;
+    this.postDataHandler = this.postDataHandler.bind(this);
+    this.getAllDatasHandler = this.getAllDatasHandler.bind(this);
+    this.getDataByIdHandler = this.getDataByIdHandler.bind(this);
+    this.putDataByIdHandler = this.putDataByIdHandler.bind(this);
+    this.deleteDataByIdHandler = this.deleteDataByIdHandler.bind(this);
   }
 
-  const response = h.response({
-    status: 'fail',
-    message: 'Data gagal ditambahkan',
-  });
+  postDataHandler(request, h) {
+    try {
+      this._validator.validateStoryPayload(request.payload);
+      const { image, name, umur, tempat_diutus, kisah } = request.payload;
+      const storyId = this._service.addStories({ image, name, umur, tempat_diutus, kisah });
 
-  response.code(500);
-  return response;
-};
+      const response = h.response({
+        status: 'success',
+        message: 'Data berhasil Ditambahkan',
+        data: {
+          storyId,
+        },
+      });
+      response.code(201);
+      return response;
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
 
-const getAllDatasHandler = () => ({
-  status: 'success',
-  datas: {
-    datas,
-  },
-});
-
-const getDataByIdHandler = (request, h) => {
-  const { id } = request.params;
-
-  const data = datas.filter((d) => d.id == id)[0];
-
-  if (data !== undefined) {
+      //server error
+      const response = h.response({
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami',
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+  getAllDatasHandler() {
+    const stories = this._service.getStories();
     return {
       status: 'success',
       data: {
-        data,
+        stories,
       },
     };
   }
-  const response = h.response({
-    status: 'fail',
-    message: 'Data gagal ditemukan',
-  });
-  response.code(404);
-  return response;
-};
+  getDataByIdHandler(request, h) {
+    try {
+      const { id } = request.params;
+      const story = this._service.getStoryById(id);
+      return {
+        status: 'success',
+        data: {
+          story,
+        },
+      };
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
 
-const editDataByIdHandler = (request, h) => {
-  const { id } = request.params;
-  const { image, name, umur, tempat_diutus, kisah } = request.payload;
-  const updatedAt = new Date().toISOString();
-
-  const index = datas.findIndex((d) => d.id === id);
-  if (index !== -1) {
-    datas[index] = {
-      ...datas[index],
-      image,
-      name,
-      umur,
-      tempat_diutus,
-      kisah,
-      updatedAt,
-    };
-    const response = h.response({
-      status: 'success',
-      message: 'Data berhasil diperbarui',
-    });
-
-    response.code(200);
-    return response;
+      //server error
+      const response = h.response({
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami',
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
   }
+  putDataByIdHandler(request, h) {
+    try {
+      this._validator.validateStoryPayload(request.payload);
+      const { id } = request.params;
+      this._service.editStoryById(id, request.payload);
 
-  const response = h.response({
-    status: 'fail',
-    message: 'Gagal Memperbaharui data, ID tidak ditemukan',
-  });
-  response.code(404);
-  return response;
-};
+      return {
+        status: 'success',
+        message: 'Story berhasil diperbaharui',
+      };
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
 
-const deleteDataByIdHandler = (request, h) => {
-  const { id } = request.params;
-
-  const index = datas.findIndex((d) => d.id === id);
-
-  if (index !== -1) {
-    datas.splice(index, 1);
-    const response = h.response({
-      status: 'success',
-      message: 'Data Berhasil dihapus',
-    });
-
-    response.code(200);
-    return response;
+      //server error
+      const response = h.response({
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami',
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
   }
+  deleteDataByIdHandler(request, h) {
+    try {
+      const { id } = request.params;
+      this._service.deleteStoryById(id);
+      return {
+        status: 'success',
+        message: 'Story Berhasil dihapus',
+      };
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
 
-  const response = h.response({
-    status: 'fail',
-    message: 'Data gagal dihapus, ID tidak ditemukan',
-  });
-  response.code(404);
-  return response;
-};
+      //server error
+      const response = h.response({
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami',
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+}
 
-module.exports = {
-  addDataHandler,
-  getAllDatasHandler,
-  getDataByIdHandler,
-  editDataByIdHandler,
-  deleteDataByIdHandler,
-};
+module.exports = StoriesHandler;
