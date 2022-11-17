@@ -11,11 +11,11 @@ class StoriesHandler {
     this.deleteDataByIdHandler = this.deleteDataByIdHandler.bind(this);
   }
 
-  postDataHandler(request, h) {
+  async postDataHandler(request, h) {
     try {
       this._validator.validateStoryPayload(request.payload);
       const { image, name, umur, tempat_diutus, kisah } = request.payload;
-      const storyId = this._service.addStories({ image, name, umur, tempat_diutus, kisah });
+      const storyId = await this._service.addStories({ image, name, umur, tempat_diutus, kisah });
 
       const response = h.response({
         status: 'success',
@@ -46,8 +46,8 @@ class StoriesHandler {
       return response;
     }
   }
-  getAllDatasHandler() {
-    const stories = this._service.getStories();
+  async getAllDatasHandler() {
+    const stories = await this._service.getStories();
     return {
       status: 'success',
       data: {
@@ -55,10 +55,10 @@ class StoriesHandler {
       },
     };
   }
-  getDataByIdHandler(request, h) {
+  async getDataByIdHandler(request, h) {
     try {
       const { id } = request.params;
-      const story = this._service.getStoryById(id);
+      const story = await this._service.getStoryById(id);
       return {
         status: 'success',
         data: {
@@ -85,11 +85,11 @@ class StoriesHandler {
       return response;
     }
   }
-  putDataByIdHandler(request, h) {
+  async putDataByIdHandler(request, h) {
     try {
       this._validator.validateStoryPayload(request.payload);
       const { id } = request.params;
-      this._service.editStoryById(id, request.payload);
+      await this._service.editStoryById(id, request.payload);
 
       return {
         status: 'success',
@@ -115,10 +115,10 @@ class StoriesHandler {
       return response;
     }
   }
-  deleteDataByIdHandler(request, h) {
+  async deleteDataByIdHandler(request, h) {
     try {
       const { id } = request.params;
-      this._service.deleteStoryById(id);
+      await this._service.deleteStoryById(id);
       return {
         status: 'success',
         message: 'Story Berhasil dihapus',
