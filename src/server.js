@@ -1,10 +1,16 @@
-const Hapi = require('@Hapi/hapi');
-const routes = require('./api/islamic-story/routes');
+require('dotenv').config();
+
+const Hapi = require('@hapi/hapi');
+const stories = require('./api/islamic-story');
+const StoriesServices = require('./services/postgres/StroiesService');
+const StorysValidator = require('./validator/islamic-story');
 
 const init = async () => {
+  const storiesService = new StoriesServices();
+
   const server = Hapi.server({
-    port: 5000,
-    host: process.env.NODE_ENV !== 'production' ? 'localhost' : '0.0.0.0',
+    port: process.env.PORT,
+    host: process.env.HOST,
     routes: {
       cors: {
         origin: ['*'],
@@ -12,7 +18,13 @@ const init = async () => {
     },
   });
 
-  server.route(routes);
+  await server.register({
+    plugin: stories,
+    options: {
+      service: storiesService,
+      validator: StorysValidator,
+    },
+  });
 
   await server.start();
   console.log(`server berjalan pada ${server.info.uri}`);
